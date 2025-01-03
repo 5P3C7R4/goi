@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"goi/pkg/goi"
+	"github.com/5P3C7R4/goi/pkg/goi"
 	"io"
 	"log"
 
