@@ -35,9 +35,22 @@ func (s *SchemaValidator) Validate(data *any) error {
 	}
 
 	for i, v := range s.schemasIn {
+		//Nombre de schema de entrada
 		fieldName := s.schemaRuleNamesIn[i]
+		//Indice en los schema que se reciben
 		index := findIndex(s.schemaValueNames, fieldName)
-		var1 := (any)(map[string]any{s.schemaValueNames[index]: s.values[index]})
+		var var1 any
+		label := fieldName
+		if index == -1 {
+			var1 = nil
+		} else {
+			var1 = (any)(s.values[index])
+		}
+		//Valor que recibe en validate
+		labelMethod := reflect.ValueOf(v).MethodByName("Label")
+		if labelMethod.IsValid() {
+			labelMethod.Call([]reflect.Value{reflect.ValueOf(label)})
+		}
 		valMethod := reflect.ValueOf(v).MethodByName("Validate")
 		if !valMethod.IsValid() {
 			panic("Method validate not found")
@@ -46,7 +59,7 @@ func (s *SchemaValidator) Validate(data *any) error {
 		if len(result) > 0 && result[0].Interface() != nil {
 			return result[0].Interface().(error)
 		}
-
+		reflect.ValueOf(*data).SetMapIndex(reflect.ValueOf(fieldName), reflect.ValueOf(var1))
 	}
 
 	return nil

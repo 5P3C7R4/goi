@@ -5,11 +5,14 @@ type Validatable interface {
 }
 
 type Validator struct {
-	value     *any
-	rules     []func(*any) error
-	ruleNames []string
-	name      string
-	Validator Validatable
+	defaultValue  any
+	originalValue *any
+	rules         []func(*any) error
+	ruleNames     []string
+	label         string
+	Validator     Validatable
+
+	required bool
 }
 
 func findIndex(arr []string, el string) int {

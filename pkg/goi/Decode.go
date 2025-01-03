@@ -6,22 +6,30 @@ import (
 	"strconv"
 )
 
-func DecodeCustom(data map[string]any, v any) error {
+func CustomDecode(src map[string]any, dst any) error {
 	// Obtener el valor de la estructura a partir de la interfaz vacía
-	val := reflect.ValueOf(v).Elem()
-	typ := reflect.TypeOf(v).Elem()
+	dstVal := reflect.ValueOf(dst).Elem()
+	dstType := reflect.TypeOf(dst).Elem()
 
-	// Recorrer los campos de la struct
-	for i := 0; i < val.NumField(); i++ {
+	// Recorrer los campos de la struct destino
+	for i := 0; i < dstVal.NumField(); i++ {
 		// Obtener el campo actual y su etiqueta "x"
-		field := val.Field(i)
-		fieldType := typ.Field(i)
+		field := dstVal.Field(i)
+		fieldType := dstType.Field(i)
 		tag := fieldType.Tag.Get("goi") // Obtener la etiqueta personalizada "x"
 
 		// Verificar si la etiqueta personalizada existe en los datos
-		if value, exists := data[tag]; exists {
+		if value, exists := src[tag]; exists {
 			// Verificar el tipo del campo y asignar el valor
 			switch field.Kind() {
+			case reflect.Pointer:
+				if fieldType.Type.Elem() != reflect.TypeOf(value) {
+					return fmt.Errorf("bad type, source type %s destination type %s", reflect.TypeOf(value).String(), fieldType.Type.Elem().String())
+				}
+				castedValue := reflect.ValueOf(value).Convert(reflect.TypeOf(value))
+				ptr := reflect.New(reflect.TypeOf(value)).Elem()
+				ptr.Set(castedValue)
+				field.Set(reflect.ValueOf(ptr.Addr().Interface()))
 			case reflect.String:
 				if strVal, ok := value.(string); ok {
 					field.SetString(strVal)
