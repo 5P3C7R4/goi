@@ -1,4 +1,4 @@
-package goi
+package "github.com/gin-gonic/gin"
 
 import (
 	"fmt"
